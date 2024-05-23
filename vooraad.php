@@ -12,8 +12,6 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-
-
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send'])) {
     $bedrijf_idbedrijf = $_POST['bedrijf_idbedrijf'];
     $aantal = $_POST['aantal'];
@@ -31,11 +29,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send'])) {
         echo "Error: " . $stmt->error;
     }
 
-    // Close statement
+    // Close statement  
     $stmt->close();
 }
 
-// Fetch data
+
+// if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send'])) {
+//     $bedrijf_idbedrijf = $_POST['vooraad.bedrijf_idbedrijf'];
+//     $aantal = $_POST['aantal'];
+//     $product_productid = $_POST['vooraad.product_productid'];
+
+//     // Prepare SQL statement
+//     $stmt = $conn->prepare("INSERT INTO vooraad (vooraad.bedrijf_idbedrijf, aantal, vooraad.product_productid) VALUES (?, ?, ?)");
+//     // Bind parameters to the SQL statement
+//     $stmt->bind_param("sis", $bedrijf_idbedrijf, $aantal, $product_productid);
+
+//     // Execute the SQL statement
+//     if ($stmt->execute()) {
+//         echo "New record created successfully";
+//     } else {
+//         echo "Error: " . $stmt->error;
+//     }
+
+//     // Close statement  
+//     $stmt->close();
+// }
+
+
+// Fetch data   
 $query = "SELECT vooraad.aantal, product.naam, bedrijf.adres
           FROM vooraad
           INNER JOIN product ON vooraad.product_productid = product.productid
@@ -66,40 +87,31 @@ $result = $stmt->get_result();
       <button type="submit" name="send">Submit</button>
   </form>
   <table>
-    <?php
+  <?php
+  if ($result->num_rows > 0) {
+      echo "<tr>";
+      echo "<th>Aantal</th>";
+      echo "<th>Naam</th>";
+      echo "<th>Adres</th>";
+      echo "<th>Update</th>";
+      echo "<th>Delete</th>";
+      echo "</tr>";
 
-
-
-    if ($result->num_rows > 0) {
-        $firstrow = $result->fetch_assoc();
-
-        echo "<tr>";
-        foreach ($firstrow as $key => $value) {
-            echo "<th>$key</th>";
-        }
-        echo "</tr>";
-
-        $result->data_seek(0);  // Reset the result set to the beginning
-
-        while ($row = $result->fetch_assoc()) {
-            echo "<tr class='dataRow'>";
-            foreach ($row as $key => $value) {
-                echo "<td>";
-                echo htmlspecialchars($value ?? '');  // Use the null coalescing operator to ensure a string
-                echo "</td>";
-            }
-            // Adjust the links to point to the correct field, assuming 'aantal' might be the identifier
-            echo "<td><a href='update1.php?aantal=" . htmlspecialchars($row['aantal'] ?? '') . "' class='btn'>update</a></td>";
-            echo "<td><a href='delete1.php?aantal=" . htmlspecialchars($row['aantal'] ?? '') . "' class='btn '>delete</a></td>";
-            echo "</tr>";
-        }
-    } else {
-        echo "Er zijn geen producten gevonden";
+      while ($row = $result->fetch_assoc()) {
+          $aantalColor = ($row['aantal'] < 10) ? 'red' : 'black'; // Als aantal onder 10 is, maak het rood
+          echo "<tr>";
+          echo "<td style='color:{$aantalColor};'>" . htmlspecialchars($row['aantal']) . "</td>";
+          echo "<td>" . htmlspecialchars($row['naam']) . "</td>";
+          echo "<td>" . htmlspecialchars($row['adres']) . "</td>";
+          echo "<td><a href='update1.php?aantal=" . htmlspecialchars($row['aantal']) . "'>update</a></td>";
+          echo "<td><a href='delete1.php?aantal=" . htmlspecialchars($row['aantal']) . "'>delete</a></td>";
+          echo "</tr>";
+      }
     }
-    $stmt->close();
-    $conn->close();
-    ?>
-  </table>
+  $stmt->close();
+  $conn->close();
+  ?>
+</table>
 
   <link rel="stylesheet" href="style.css">
   <style>
