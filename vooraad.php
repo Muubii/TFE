@@ -2,41 +2,47 @@
 $servername = "docker-mysql-1";
 $username = "root";
 $password = "password";
-$database = "toolsforever"; // Specify your database name here
-
+$database = "toolsforever";
 
 // Create connection
-$conn = new mysqli($servername, $username, $password, $database); // Add $database here
+$conn = new mysqli($servername, $username, $password, $database);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send'])) {
+    $bedrijf_idbedrijf = $_POST['bedrijf_idbedrijf'];
+    $aantal = $_POST['aantal'];
+    $product_productid = $_POST['product_productid'];
 
-
-  $bedrijif_idbedrijf =  $_POST['bedrijif_idbedrijf'];
-  $aantal =  $_POST['aantal'];
-  $product_productid =  $_POST['product_productid'];
-
-
-
-  $sdsd = $conn->prepare("INSERT INTO vooraad (bedrijif_idbedrijf, aantal, product_productid) VALUES (?, ?, ?)");
-  $sdsd->bind_param("issiis", $bedrijif_idbedrijf, $aantal, $product_productid);
-
+    // Prepare SQL statement
+    $stmt = $conn->prepare("INSERT INTO vooraad (bedrijf_idbedrijf, aantal, product_productid) VALUES (?, ?, ?)");
+    // Bind parameters to the SQL statement
+    $stmt->bind_param("iii", $bedrijf_idbedrijf, $aantal, $product_productid);
 
     // Execute the SQL statement
-    if ($sdsd->execute()) {
-      echo "New record created successfully";
-  } else {
-      echo "Error: " . $sdsd->error;
-  }
+    if ($stmt->execute()) {
+        echo "New record created successfully";
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+
+    // Close statement
+    $stmt->close();
 }
 
-$query = "SELECT * FROM vooraad";
-$stmt = $conn->prepare($query) or die("Error 1");
-$stmt->execute() or die("Error 2");
-$row = $stmt->fetch() or die("Error 3");
-$stmt->execute() or die("Error 2:");
+// Fetch data
+$query = "SELECT vooraad.aantal, product.naam, bedrijf.adres
+          FROM vooraad
+          INNER JOIN product ON vooraad.product_productid = product.productid
+          INNER JOIN bedrijf ON vooraad.bedrijf_idbedrijf = bedrijf.idbedrijf";
 
-// Fetch the first row
+$stmt = $conn->prepare($query);
+$stmt->execute();
 $result = $stmt->get_result();
 ?>
 
@@ -48,74 +54,73 @@ $result = $stmt->get_result();
     <title>Document</title>
 </head>
 <body>
-  <a href="index.html">
-  <button>home</button></a>
-<table>
-<?php
-  // $query = $conn->prepare("SELECT product.naam, bedrijf.adres AS locatie, voorraad.aantal 
-  // FROM voorraad
-  // INNER JOIN artikel on product.productid = voorraad.product_productid
-  // INNER JOIN vesteging on bedrijf.idbedrijf = voorraad.bedrijf_idbedrijf");
+  <a href="index.html"><button>home</button></a>
+
+  <form class="registration-form" action="vooraad.php" method="POST">
+      <label for="aantal">Aantal:</label>
+      <input type="text" id="aantal" name="aantal" placeholder="Enter your aantal" required>
+      <label for="product_productid">Naam:</label>
+      <input type="text" id="product_productid" name="product_productid" placeholder="Enter your naam" required>
+      <label for="bedrijf_idbedrijf">Adres:</label>
+      <input type="text" id="bedrijf_idbedrijf" name="bedrijf_idbedrijf" placeholder="Enter your adres" required>
+      <button type="submit" name="send">Submit</button>
+  </form>
+  <table>
+    <?php
 
 
-  $query = $conn->prepare("SELECT * FROM vooraad");
-  $query->execute();
-  $result = $query->get_result();
-  
 
-  if ($result->num_rows > 0) {
-    
-    $firstrow = $result->fetch_assoc();
+    if ($result->num_rows > 0) {
+        $firstrow = $result->fetch_assoc();
 
-    echo "<tr>";
-    foreach ($firstrow as $key => $value) {
-        echo "<th>$key</th>";
-    }
-    echo "</tr>";
-
-    $result->data_seek(0);  // Reset the result set to the beginning
-
-    while ($row = $result->fetch_assoc()) {
-        echo "<tr class='dataRow'>";
-        foreach ($row as $key => $value) {
-            echo "<td>";
-            echo htmlspecialchars($value ?? '');  // Use the null coalescing operator to ensure a string
-            echo "</td>";
+        echo "<tr>";
+        foreach ($firstrow as $key => $value) {
+            echo "<th>$key</th>";
         }
-        // Adjust the links to point to the correct field, assuming 'productid' might be the identifier
-        echo "<td><a href='update1.php?aantal=" . htmlspecialchars($row['aantal'] ?? '') . "' class='btn'>update</a></td>";
-        echo "<td><a href='delete1.php?aantal=" . htmlspecialchars($row['aantal'] ?? '') . "' class='btn '>delete</a></td>";
         echo "</tr>";
+
+        $result->data_seek(0);  // Reset the result set to the beginning
+
+        while ($row = $result->fetch_assoc()) {
+            echo "<tr class='dataRow'>";
+            foreach ($row as $key => $value) {
+                echo "<td>";
+                echo htmlspecialchars($value ?? '');  // Use the null coalescing operator to ensure a string
+                echo "</td>";
+            }
+            // Adjust the links to point to the correct field, assuming 'aantal' might be the identifier
+            echo "<td><a href='update1.php?aantal=" . htmlspecialchars($row['aantal'] ?? '') . "' class='btn'>update</a></td>";
+            echo "<td><a href='delete1.php?aantal=" . htmlspecialchars($row['aantal'] ?? '') . "' class='btn '>delete</a></td>";
+            echo "</tr>";
+        }
+    } else {
+        echo "Er zijn geen producten gevonden";
     }
-} else {
-    echo "Er zijn geen producten gevonden";
-}
+    $stmt->close();
+    $conn->close();
+    ?>
+  </table>
 
-?>
-</table>
-<link rel="stylesheet" href="style.css">
-    <style>
-      table, tr, td{
-        border: solid 1px black;
-        border-collapse: collapse;
+  <link rel="stylesheet" href="style.css">
+  <style>
+      table, tr, td {
+          border: solid 1px black;
+          border-collapse: collapse;
       }
 
-      td{
-        padding: 10px;
-        height: 5vh;
-        width: 5%;
+      td {
+          padding: 10px;
+          height: 5vh;
+          width: 5%;
       }
 
-      .curd{
-
-        text-align: center;
+      .curd {
+          text-align: center;
       }
 
-
-      tr:hover{
-        background-color: #aeb7c0;
+      tr:hover {
+          background-color: #aeb7c0;
       }
-
-    </style>
+  </style>
 </body>
 </html>

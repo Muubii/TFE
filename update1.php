@@ -4,55 +4,94 @@ $dbUsername = "root";
 $password = "password";
 $database = "toolsforever";
 
+// Maak verbinding met de database
 $connection = new mysqli($servername, $dbUsername, $password, $database);
+
+// Controleer de verbinding
+if ($connection->connect_error) {
+    die("Verbinding mislukt: " . $connection->connect_error);
+}
 
 session_start(); 
 
+// Haal de oorspronkelijke product ID op uit de queryparameter
 $originalProductid = $_GET['aantal'] ?? null;
 
 $user = null;
 if ($originalProductid) {
+    // Bereid de SELECT-verklaring voor en voer deze uit
     $stmt = $connection->prepare("SELECT * FROM vooraad WHERE aantal = ?");
     if ($stmt) {
-        $stmt->bind_param("s", $originalProductid);
+        $stmt->bind_param("i", $originalProductid); 
         $stmt->execute();
         $result = $stmt->get_result();
         $user = $result->fetch_assoc();
         $stmt->close();
     } else {
-        echo "Error preparing statement: " . $connection->error;
+        echo "Fout bij het voorbereiden van de verklaring: " . $connection->error;
     }
 }
 
+// Haal de lijst van bedrijven op voor de dropdown
+$bedrijven = [];
+$result = $connection->query("SELECT * FROM bedrijf");
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $bedrijven[] = $row;
+    }
+} else {
+    echo "Fout bij het ophalen van bedrijven: " . $connection->error;
+}
+
+// Haal de lijst van producten op voor de dropdown
+$producten = [];
+$result = $connection->query("SELECT * FROM product");
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $producten[] = $row;
+    }
+} else {
+    echo "Fout bij het ophalen van producten: " . $connection->error;
+}
+
+// Verwerk de POST-aanvraag om het record bij te werken
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update'])) {
     $originalProductid = $_POST['original_productid'];
     $newAantal =  $_POST['aantal'];
     $newbedrijf =  $_POST['bedrijf_idbedrijf'];
     $newProduct =  $_POST['product_productid'];
 
-// Assuming connection is already established and $connection is your mysqli object
-if ($stmt = $connection->prepare("UPDATE vooraad SET aantal = ?, bedrijf_idbedrijf = ?, product_productid = ?=WHERE vooraad = ?")) {
-    // Bind parameters: Assuming all parameters are integers except for naam, fabriek, and type which are strings
-    $stmt->bind_param("iiii", $newAantal, $newbedrijf, $newProduct, $originalProductid);
-
-    // Execute the query
-    if ($stmt->execute()) {
-        header('Location: vooraad.php'); 
-    } else {
-        echo "Error updating record: " . $stmt->error;
-    }
-
+    // Controleer of de nieuwe primaire sleutel al bestaat
+    $stmt = $connection->prepare("SELECT COUNT(*) FROM vooraad WHERE aantal = ?");
+    $stmt->bind_param("i", $newAantal);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
     $stmt->close();
+
+    if ($count > 0 && $newAantal != $originalProductid) {
+        echo "Fout: Dubbele invoer voor sleutel 'PRIMARY'. De aantal waarde bestaat al.";
+    } else {
+        if ($stmt = $connection->prepare("UPDATE vooraad SET aantal = ?, bedrijf_idbedrijf = ?, product_productid = ? WHERE aantal = ?")) {
+            // Bind parameters
+            $stmt->bind_param("iiii", $newAantal, $newbedrijf, $newProduct, $originalProductid);
+        
+            // Voer de query uit
+            if ($stmt->execute()) { 
+                header('Location: vooraad.php'); 
+                exit();
+    }
+        }
+    }
 }
-}
-    
+
 $connection->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update item</title>
@@ -63,16 +102,36 @@ $connection->close();
     <form class="registration-form" action="" method="POST">
         <input type="hidden" name="original_productid" value="<?php echo htmlspecialchars($user['aantal'] ?? ''); ?>">
 
-        <label for="aantal">aantal ID:</label>
+        <label for="aantal">Aantal ID:</label>
         <input type="text" id="aantal" name="aantal" value="<?php echo htmlspecialchars($user['aantal'] ?? ''); ?>" required>
         
-        <label for="naam">bedijf:</label>
-        <input type="text" id="naam" name="naam" placeholder="Enter new naam" required>
+        <label for="bedrijf">Bedrijf:</label>
+        <select id="bedrijf" name="bedrijf_idbedrijf" required>
+            <?php if (empty($bedrijven)): ?>
+                <option value="">Geen bedrijven beschikbaar</option>
+            <?php else: ?>
+                <?php foreach ($bedrijven as $bedrijf): ?>
+                    <option value="<?php echo $bedrijf['idbedrijf']; ?>" <?php echo (isset($user['bedrijf_idbedrijf']) && $user['bedrijf_idbedrijf'] == $bedrijf['idbedrijf']) ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($bedrijf['adres']); ?>
+                    </option>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </select>
 
-        <label for="fabriek">product:</label>
-        <input type="text" id="fabriek" name="fabriek" placeholder="Enter new fabriek" required>
+        <label for="product">Product:</label>
+        <select id="product" name="product_productid" required>
+            <?php if (empty($producten)): ?>
+                <option value="">Geen producten beschikbaar</option>
+            <?php else: ?>
+                <?php foreach ($producten as $product): ?>
+                    <option value="<?php echo $product['productid']; ?>" <?php echo (isset($user['product_productid']) && $user['product_productid'] == $product['productid']) ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($product['naam']); ?>
+                    </option>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </select>
+
         <button type="submit" name="update">Update</button>
     </form>
 </body>
 </html>
-
