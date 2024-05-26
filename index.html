@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bedrijfs Dashboard</title>
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
         <h1>Tools for ever Dashboard</h1>
     </header>
-    <div> <button> <a id = "button" href="logout.php">logout</a></button></div> </div>
+
+    <div class="button-container">
+    <button class="button" onclick="location.href='logout.php';">Logout</button>
+</div>
+
+
     <div class="container">
         <div class="card">
             <a href="crud.php">
@@ -18,7 +22,7 @@
         </div>
         <div class="card">
             <a href="search.php">
-            <h2>Zoekmachiene</h2>
+            <h2>Zoekmachine</h2>
         </div>
         <div class="card">
             <a href="vooraad.php">
@@ -33,4 +37,65 @@
 </div>
     <script src="script.js"></script>
 </body>
+
+<style>
+    body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #F4F4F4;
+    color: #333;
+}
+
+header {
+    background: #003366;
+    color: #fff;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    width: 30%;
+    margin: 20px;
+}
+
+.card h2 {
+    color: #003366;
+}
+
+a{
+    text-decoration: none;
+    color: black;
+    gap: 20%;
+}
+
+.button-container{
+    height: 10vh;
+    padding: 10px;
+}
+
+.button {
+    padding: 15px 30px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #003366;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #00509e; 
+}
+</style>
 </html>

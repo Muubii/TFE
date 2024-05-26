@@ -33,9 +33,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update'])) {
     $newInkoopprijs = $_POST['inkoopprijs'] ?? 0;
     $newType =  $_POST['type'];
 
-// Assuming connection is already established and $connection is your mysqli object
+
 if ($stmt = $connection->prepare("UPDATE product SET productid = ?, naam = ?, fabriek = ?, `verkoop prijs` = ?, inkoopprijs = ?, type = ? WHERE productid = ?")) {
-    // Bind parameters: Assuming all parameters are integers except for naam, fabriek, and type which are strings
+
     $stmt->bind_param("issiisi", $newProductid, $newNaam, $newFabriek, $newVerkoopprijs, $newInkoopprijs, $newType, $originalProductid);
 
     // Execute the query

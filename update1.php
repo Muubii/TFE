@@ -4,22 +4,22 @@ $dbUsername = "root";
 $password = "password";
 $database = "toolsforever";
 
-// Maak verbinding met de database
+
 $connection = new mysqli($servername, $dbUsername, $password, $database);
 
-// Controleer de verbinding
+
 if ($connection->connect_error) {
     die("Verbinding mislukt: " . $connection->connect_error);
 }
 
 session_start(); 
 
-// Haal de oorspronkelijke product ID op uit de queryparameter
+
 $originalProductid = $_GET['aantal'] ?? null;
 
 $user = null;
 if ($originalProductid) {
-    // Bereid de SELECT-verklaring voor en voer deze uit
+
     $stmt = $connection->prepare("SELECT * FROM vooraad WHERE aantal = ?");
     if ($stmt) {
         $stmt->bind_param("i", $originalProductid); 
@@ -32,7 +32,6 @@ if ($originalProductid) {
     }
 }
 
-// Haal de lijst van bedrijven op voor de dropdown
 $bedrijven = [];
 $result = $connection->query("SELECT * FROM bedrijf");
 if ($result) {
@@ -43,7 +42,7 @@ if ($result) {
     echo "Fout bij het ophalen van bedrijven: " . $connection->error;
 }
 
-// Haal de lijst van producten op voor de dropdown
+
 $producten = [];
 $result = $connection->query("SELECT * FROM product");
 if ($result) {
@@ -54,14 +53,14 @@ if ($result) {
     echo "Fout bij het ophalen van producten: " . $connection->error;
 }
 
-// Verwerk de POST-aanvraag om het record bij te werken
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update'])) {
     $originalProductid = $_POST['original_productid'];
     $newAantal =  $_POST['aantal'];
     $newbedrijf =  $_POST['bedrijf_idbedrijf'];
     $newProduct =  $_POST['product_productid'];
 
-    // Controleer of de nieuwe primaire sleutel al bestaat
+
     $stmt = $connection->prepare("SELECT COUNT(*) FROM vooraad WHERE aantal = ?");
     $stmt->bind_param("i", $newAantal);
     $stmt->execute();

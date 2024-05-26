@@ -13,18 +13,45 @@ if ($conn->connect_error) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send'])) {
-    $bedrijf_idbedrijf = $_POST['bedrijf_idbedrijf'];
     $aantal = $_POST['aantal'];
-    $product_productid = $_POST['product_productid'];
+    $naam = $_POST['naam'];
+    $adres = $_POST['adres'];
 
-    // Prepare SQL statement
+    // Insert new address if it doesn't exist
+    $stmt = $conn->prepare("INSERT INTO bedrijf (adres) VALUES (?) ON DUPLICATE KEY UPDATE adres=adres");
+    $stmt->bind_param("s", $adres);
+    $stmt->execute();
+    $stmt->close();
+    
+    // Get the id of the address
+    $stmt = $conn->prepare("SELECT idbedrijf FROM bedrijf WHERE adres = ?");
+    $stmt->bind_param("s", $adres);
+    $stmt->execute();
+    $stmt->bind_result($bedrijf_idbedrijf);
+    $stmt->fetch();
+    $stmt->close();
+    
+    // Insert new product if it doesn't exist
+    $stmt = $conn->prepare("INSERT INTO product (naam) VALUES (?) ON DUPLICATE KEY UPDATE naam=naam");
+    $stmt->bind_param("s", $naam);
+    $stmt->execute();
+    $stmt->close();
+    
+    // Get the id of the product
+    $stmt = $conn->prepare("SELECT productid FROM product WHERE naam = ?");
+    $stmt->bind_param("s", $naam);
+    $stmt->execute();
+    $stmt->bind_result($product_productid);
+    $stmt->fetch();
+    $stmt->close();
+
+
     $stmt = $conn->prepare("INSERT INTO vooraad (bedrijf_idbedrijf, aantal, product_productid) VALUES (?, ?, ?)");
-    // Bind parameters to the SQL statement
     $stmt->bind_param("iii", $bedrijf_idbedrijf, $aantal, $product_productid);
 
     // Execute the SQL statement
     if ($stmt->execute()) {
-        echo "New record created successfully";
+        echo "Created successfully";
     } else {
         echo "Error: " . $stmt->error;
     }
@@ -34,29 +61,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send'])) {
 }
 
 
-// if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['send'])) {
-//     $bedrijf_idbedrijf = $_POST['vooraad.bedrijf_idbedrijf'];
-//     $aantal = $_POST['aantal'];
-//     $product_productid = $_POST['vooraad.product_productid'];
-
-//     // Prepare SQL statement
-//     $stmt = $conn->prepare("INSERT INTO vooraad (vooraad.bedrijf_idbedrijf, aantal, vooraad.product_productid) VALUES (?, ?, ?)");
-//     // Bind parameters to the SQL statement
-//     $stmt->bind_param("sis", $bedrijf_idbedrijf, $aantal, $product_productid);
-
-//     // Execute the SQL statement
-//     if ($stmt->execute()) {
-//         echo "New record created successfully";
-//     } else {
-//         echo "Error: " . $stmt->error;
-//     }
-
-//     // Close statement  
-//     $stmt->close();
-// }
-
-
-// Fetch data   
 $query = "SELECT vooraad.aantal, product.naam, bedrijf.adres
           FROM vooraad
           INNER JOIN product ON vooraad.product_productid = product.productid
@@ -80,10 +84,10 @@ $result = $stmt->get_result();
   <form class="registration-form" action="vooraad.php" method="POST">
       <label for="aantal">Aantal:</label>
       <input type="text" id="aantal" name="aantal" placeholder="Enter your aantal" required>
-      <label for="product_productid">Naam:</label>
-      <input type="text" id="product_productid" name="product_productid" placeholder="Enter your naam" required>
-      <label for="bedrijf_idbedrijf">Adres:</label>
-      <input type="text" id="bedrijf_idbedrijf" name="bedrijf_idbedrijf" placeholder="Enter your adres" required>
+      <label for="naam">Naam:</label>
+      <input type="text" id="naam" name="naam" placeholder="Enter product naam" required>
+      <label for="adres">Adres:</label>
+      <input type="text" id="adres" name="adres" placeholder="Enter adres" required>
       <button type="submit" name="send">Submit</button>
   </form>
   <table>
@@ -115,24 +119,105 @@ $result = $stmt->get_result();
 
   <link rel="stylesheet" href="style.css">
   <style>
-      table, tr, td {
-          border: solid 1px black;
-          border-collapse: collapse;
-      }
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #F4F4F4;
+            color: #333;
+        }
 
-      td {
-          padding: 10px;
-          height: 5vh;
-          width: 5%;
-      }
+        header {
+            background: #003366;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+        }
 
-      .curd {
-          text-align: center;
-      }
+        .search-container, .registration-form {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
 
-      tr:hover {
-          background-color: #aeb7c0;
-      }
+        .search-container input[type="text"], .registration-form input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .search-container button, .registration-form button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #003366;
+            color: white;
+            cursor: pointer;
+        }
+
+        .search-container button:hover, .registration-form button:hover {
+            background-color: #00509e;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            font-size: 18px;
+            text-align: left;
+        }
+
+        table th, table td {
+            padding: 12px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #003366;
+            color: white;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+
+        a button {
+            background: #003366;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px;
+            text-align: center;
+        }
+
+        a button:hover {
+            background-color: #00509e;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
   </style>
 </body>
 </html>

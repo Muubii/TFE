@@ -10,7 +10,6 @@ $conn = new mysqli($servername, $username, $password, $database);
 // Start the session
 session_start();
 
-// Check if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
     // Collect post data
     $myusername = $_POST['username'];

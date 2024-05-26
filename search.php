@@ -2,9 +2,9 @@
 $servername = "docker-mysql-1";
 $username = "root";
 $password = "password";
-$database = "toolsforever"; // Specify your database name here
+$database = "toolsforever"; 
 
-$conn = new mysqli($servername, $username, $password, $database); // Add $database here
+$conn = new mysqli($servername, $username, $password, $database); 
 
 $searchQuery = "";
 
@@ -36,12 +36,15 @@ $result = $stmt->get_result();
     <button>home</button>
 </a>
 
-<div>
-    <form method="POST">
-        <input type="text" name="search_query" value="<?php echo htmlspecialchars($searchQuery); ?>" placeholder="Search...">
-        <button type="submit" name="search">Search</button>
+
+<div class="search-container">
+<form method="POST">
+    <input type="text" name="search_query" value="<?php echo htmlspecialchars($searchQuery); ?>" placeholder="Search...">
+    <button type="submit" name="search">Search</button>
     </form>
 </div>
+
+
 
 <table>
     <?php
@@ -54,13 +57,13 @@ $result = $stmt->get_result();
         }
         echo "</tr>";
 
-        $result->data_seek(0);  // Reset the result set to the beginning
+        $result->data_seek(0);  
 
         while ($row = $result->fetch_assoc()) {
             echo "<tr class='dataRow'>";
             foreach ($row as $key => $value) {
                 echo "<td>";
-                echo htmlspecialchars($value ?? '');  // Use the null coalescing operator to ensure a string
+                echo htmlspecialchars($value ?? '');  
                 echo "</td>";
             }
             echo "</tr>";
@@ -70,21 +73,117 @@ $result = $stmt->get_result();
 </table>
 
 <style>
-    table, tr, td {
-        border: solid 1px black;
-        border-collapse: collapse;
-    }
-    td {
-        padding: 10px;
-        height: 5vh;
-        width: 5%;
-    }
-    .curd {
-        text-align: center;
-    }
-    tr:hover {
-        background-color: #aeb7c0;
-    }
+    body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #F4F4F4;
+            color: #333;
+        }
+
+        header {
+            background: #003366;
+            color: #fff;
+            padding: 10px 20px;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 30%;
+            margin: 20px;
+        }
+
+        .card h2 {
+            color: #003366;
+        }
+
+        a {
+            text-decoration: none;
+            color: black;
+            gap: 20%;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            font-size: 18px;
+            text-align: left;
+        }
+
+        table th, table td {
+            padding: 12px;
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #003366;
+            color: white;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .search-container input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .search-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #003366;
+            color: white;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: #00509e;
+        }
+
+        
+        a button {
+            background: #003366;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px;
+            text-align: center;
+        }
+
+        a button:hover {
+            background-color: #00509e;
+        }
+
 </style>
 </body>
 </html>
