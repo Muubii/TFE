@@ -1,0 +1,169 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema toolsforever
+-- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `toolsforever` ;
+
+-- -----------------------------------------------------
+-- Schema toolsforever
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `toolsforever` ;
+USE `toolsforever` ;
+
+-- -----------------------------------------------------
+-- Table `toolsforever`.`bedrijf`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toolsforever`.`bedrijf` ;
+
+CREATE TABLE IF NOT EXISTS `toolsforever`.`bedrijf` (
+  `idbedrijf` INT(11) NOT NULL,
+  `adres` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`idbedrijf`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toolsforever`.`bestellingen`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toolsforever`.`bestellingen` ;
+
+CREATE TABLE IF NOT EXISTS `toolsforever`.`bestellingen` (
+  ` bedrijf_id` INT(11) NOT NULL,
+  `vooraad` INT(11) NULL DEFAULT NULL,
+  `besteldatum` DATE NULL DEFAULT NULL,
+  `bezorgdatum` DATE NULL DEFAULT NULL,
+  PRIMARY KEY (` bedrijf_id`),
+  INDEX `fk_bedrijf_has_product1_bedrijf1_idx` (` bedrijf_id` ASC) VISIBLE,
+  CONSTRAINT `fk_bedrijf_has_product1_bedrijf1`
+    FOREIGN KEY (` bedrijf_id`)
+    REFERENCES `toolsforever`.`bedrijf` (`idbedrijf`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toolsforever`.`product`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toolsforever`.`product` ;
+
+CREATE TABLE IF NOT EXISTS `toolsforever`.`product` (
+  `productid` INT(11) NOT NULL,
+  `naam` VARCHAR(45) NULL DEFAULT NULL,
+  `fabriek` VARCHAR(45) NULL DEFAULT NULL,
+  `verkoop prijs` INT(11) NULL DEFAULT NULL,
+  `inkoopprijs` INT(11) NULL,
+  `type` VARCHAR(45) NULL,
+  PRIMARY KEY (`productid`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toolsforever`.`vooraad`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toolsforever`.`vooraad` ;
+
+CREATE TABLE IF NOT EXISTS `toolsforever`.`vooraad` (
+  `bedrijf_idbedrijf` INT(11) NOT NULL,
+  `aantal` INT(11) NULL DEFAULT NULL,
+  `product_productid` INT(11) NOT NULL,
+  PRIMARY KEY (`bedrijf_idbedrijf`, `product_productid`),
+  INDEX `fk_vooraad_product1_idx` (`product_productid` ASC) VISIBLE,
+  CONSTRAINT `fk_vooraad_bedrijf1`
+    FOREIGN KEY (`bedrijf_idbedrijf`)
+    REFERENCES `toolsforever`.`bedrijf` (`idbedrijf`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_vooraad_product1`
+    FOREIGN KEY (`product_productid`)
+    REFERENCES `toolsforever`.`product` (`productid`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `toolsforever`.`bestellingen_has_product`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `toolsforever`.`bestellingen_has_product` ;
+
+CREATE TABLE IF NOT EXISTS `toolsforever`.`bestellingen_has_product` (
+  `bestellingen_ bedrijf_id` INT(11) NOT NULL,
+  `product_productid` INT(11) NOT NULL,
+  PRIMARY KEY (`bestellingen_ bedrijf_id`, `product_productid`),
+  INDEX `fk_bestellingen_has_product_product1_idx` (`product_productid` ASC) VISIBLE,
+  INDEX `fk_bestellingen_has_product_bestellingen1_idx` (`bestellingen_ bedrijf_id` ASC) VISIBLE,
+  CONSTRAINT `fk_bestellingen_has_product_bestellingen1`
+    FOREIGN KEY (`bestellingen_ bedrijf_id`)
+    REFERENCES `toolsforever`.`bestellingen` (` bedrijf_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_bestellingen_has_product_product1`
+    FOREIGN KEY (`product_productid`)
+    REFERENCES `toolsforever`.`product` (`productid`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+-- -----------------------------------------------------
+-- Data for table `toolsforever`.`bedrijf`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `toolsforever`;
+INSERT INTO `toolsforever`.`bedrijf` (`idbedrijf`, `adres`) VALUES (1, 'Rotterdam');
+INSERT INTO `toolsforever`.`bedrijf` (`idbedrijf`, `adres`) VALUES (2, 'Almere');
+INSERT INTO `toolsforever`.`bedrijf` (`idbedrijf`, `adres`) VALUES (3, 'Eindhoven');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `toolsforever`.`product`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `toolsforever`;
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (1, 'Accuboormachine', 'Worx', 1117.50, 699.50, 'WX 382');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (2, '4- n-1 schuurmachine', 'Black & Decker', 1019.25, 839.25	, 'KA 280 K	');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (3, 'Verstekzaag', 'Einhell', 134.98, 99.90, 'BT-MS 2112	');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (4, 'Alleszuiger', 'Kärcher', 191.84, 119.80, 'WD2.200	');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (5, 'Accuboormachine', 'Worx', 1229.25, 769.45, 'WX 382	');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (6, 'Accuboormachine', 'Bosch', 816.00, 719.40, 'PSR 14.4	');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (7, '33-delige boorset	', 'Sencys', 820.80, 537.30, NULL);
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (8, 'Workmate', 'Black & Decker', 884.80, 699.30, 'WM 536');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (9, 'Kruislijnlaseret', 'Bosch	', 1346.40, 1099.45, 'PCL 20	');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (10, 'Accuboormachine', 'Worx', 1229.25, 769.45, 'WX 382	');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (11, 'Accuboormachine', 'Bosch	', 816.00, 719.40, 'PSR 14.4	');
+INSERT INTO `toolsforever`.`product` (`productid`, `naam`, `fabriek`, `verkoop prijs`, `inkoopprijs`, `type`) VALUES (111, 'ac', 'dsd', 111, 111, 'saDs');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `toolsforever`.`vooraad`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `toolsforever`;
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (1, 10, 1);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (1, 15, 2);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (1, 2, 3);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (2, 4, 4);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (2, 11, 1);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (2, 12, 5);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (2, 54, 6);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (3, 14, 7);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (3, 11, 8);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (3, 11, 1);
+INSERT INTO `toolsforever`.`vooraad` (`bedrijf_idbedrijf`, `aantal`, `product_productid`) VALUES (3, 12, 6);
+
+COMMIT;
+
